@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat App</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <h1>Group Chat</h1>
+    <div id="messages"></div>
+    <input id="messageInput" type="text" placeholder="Type a message">
+    <button id="sendButton">Send</button>
+
+    <script>
+        async function fetchConfig() {
+            const response = await fetch('/config');
+            return response.json();
+        }
+        const socket = io('http://localhost:5000', {
+            query: {
+                token: 'YOUR_TOKEN' // replace with your actual token
+            }
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            const groupId = 'YOUR GROUPID'; // replace with the actual group ID
+
+            // Join the group
+            socket.emit('joinGroup', groupId);
+
+            // Listen for new messages
+            socket.on('newMessage', (message) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.textContent = `${message.sender}: ${message.content}`;
+                document.getElementById('messages').appendChild(messageDiv);
+            });
+        });
+
+        document.getElementById('sendButton').addEventListener('click', () => {
+            const messageInput = document.getElementById('messageInput');
+            const content = messageInput.value;
+            const groupId = 'YOUR GROUPID'; // replace with the actual group ID
+
+            // Send a message to the group
+            socket.emit('sendMessage', { groupId, content });
+
+            // Clear the input
+            messageInput.value = '';
+        });
+    </script>
+</body>
+
+</html>
